@@ -37,7 +37,14 @@ const friends = [
 
 server.on("request", (req, res) => {
   const items = req.url.split("/");
-  if (items[1] === "friends") {
+  if (req.method === "POST" && items[1] === "friends") {
+    req.on("data", (data) => {
+      const friend = data.toString();
+      friends.push(JSON.parse(friend));
+      console.log("Request: ", friend);
+    });
+    req.pipe(res);
+  } else if (req.method === "GET" && items[1] === "friends") {
     res.statusCode = 200;
     res.setHeader("Content-Type", "application/json");
     if (items.length === 3) {
@@ -46,7 +53,7 @@ server.on("request", (req, res) => {
     } else {
       res.end(JSON.stringify(friends));
     }
-  } else if (items[1] === "messages") {
+  } else if (req.method === "GET" && items[1] === "messages") {
     res.setHeader("Content-Type", "text/html");
     res.write("<html>");
     res.write("<body>");
@@ -65,6 +72,6 @@ server.on("request", (req, res) => {
   }
 });
 
-server.listen(PORT, "192.168.19.193", () => {
+server.listen(PORT, "192.168.65.193", () => {
   console.log(`Server listenning on port ${PORT}.`);
 });
